@@ -87,28 +87,24 @@ int free_block(void* ptr) {
 int main() {
 
   // Init
-  if (init_manager(2 * 1024 * 1024) != SUCCESS) {
+  if (init_manager(512 * 1024 * 1024) != SUCCESS) {
     printf("Failed to initialize memory pool.\n");
     return 1;
   }
 
-  // Test allocations
-  void* block1 = alloc_block(512); // Allocate 100 bytes
+  // Test allocations and deallocations
+  void* block1 = alloc_block(2 * 1024 * 1024); // Allocate 2 MB
   if (block1 != NULL) {
 	  free_block(block1);
   } else {
     printf("Allocation failed");
   }
-  void* block2 = alloc_block(1024); // Allocate 500 bytes
+  void* block2 = alloc_block(512 * 1024 * 1024); // Allocate 512 MB
    if (block2 != NULL) {
           free_block(block2);
   } else {
     printf("Allocation failed");
   }
-
-  // Test deallocations
-  //free_block(block1);
-  //free_block(block2);
 
   // Print stats
   printf("Pool size: %zu bytes\n", pool_size);

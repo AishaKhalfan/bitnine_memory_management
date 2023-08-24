@@ -17,8 +17,8 @@ void* alloc_block(size_t size);
 int free_block(void* ptr);
 
 // Stats
-int allocs = 0;
-int frees = 0;
+int num_allocations = 0;
+int num_deallocations = 0;
 int fails = 0;
 double avg_time = 0;
 size_t max = 0, min = INT_MAX;
@@ -60,7 +60,7 @@ void* alloc_block(size_t size) {
   clock_t end_time = clock();
   avg_time += ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
 
-  allocs++;
+  num_allocations++;
 
   if (size > max) max = size;
   if (size < min) min = size;
@@ -77,7 +77,8 @@ void* alloc_block(size_t size) {
 int free_block(void* ptr) {
   if (ptr != NULL) {
     //free(ptr);
-    frees++;
+    //frees++;
+    num_deallocations++;
     return SUCCESS;
 } else {
   return FAILURE;
@@ -86,38 +87,52 @@ int free_block(void* ptr) {
 
 int main() {
 
-  // Init
+  // Initialization
   if (init_manager(2 * 1024 * 1024) != SUCCESS) {
     printf("Failed to initialize memory pool.\n");
     return 1;
   }
+  // Testing allocations and deallocations
 
-  // Test allocations
-  void* block1 = alloc_block(512); // Allocate 100 bytes
-  if (block1 != NULL) {
-	  free_block(block1);
-  } else {
-    printf("Allocation failed");
+  /*for (int i = 0; i < 409; i++) {
+    void* block = alloc_block(5 * 1024); // Allocate 5kb
+    if (block != NULL) {
+       num_allocations++;
+       free_block(block);
+       num_deallocations++;
+    } else {
+      printf("Allocation failed\n");
+    }
+  //}
+  */
+   init_manager(512 * 1024 * 1024); // 512 MB
+
+  srand(time(0)); // Seed RNG
+
+  // Allocate and free blocks
+  for(int i=0; i<100; i++) {
+
+    // Generate random size
+    int r = (rand() % 4000) + 1000;
+
+    void* block = alloc_block(r);
+
+    // Randomly free
+    if(rand() % 5 == 0) {
+      free_block(block);
+    }
+
   }
-  void* block2 = alloc_block(1024); // Allocate 500 bytes
-   if (block2 != NULL) {
-          free_block(block2);
-  } else {
-    printf("Allocation failed");
-  }
-
-  // Test deallocations
-  //free_block(block1);
-  //free_block(block2);
-
+  
+ 
   // Print stats
   printf("Pool size: %zu bytes\n", pool_size);
-  printf("Allocations: %d\n", allocs);
-  printf("Frees: %d\n", frees);
+  printf("allocations: %d\n", num_allocations);
+  printf("Deallocations: %d\n", num_deallocations);
   printf("Fails: %d\n", fails);
   printf("Max Allocation: %zu bytes\n", max);
   printf("Min Allocation: %zu bytes\n", min);
-  printf("Average Allocation Time: %.6f seconds\n", avg_time / allocs);
+  printf("Average Allocation Time: %.6f seconds\n", avg_time / num_allocations);
 
   // Clean up
   //free(pool);
